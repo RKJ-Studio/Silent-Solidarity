@@ -6,18 +6,23 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+// pino-http's typings can vary between bundlers/environments; coerce the import
+// into a callable middleware factory so TypeScript/ESM interop differences don't
+// cause a build failure on Vercel.
+const pinoHttpMiddleware: (opts?: any) => any = (pinoHttp as unknown as any).default ?? (pinoHttp as unknown as any);
+
 app.use(
-  pinoHttp({
+  pinoHttpMiddleware({
     logger,
     serializers: {
-      req(req) {
+      req(req: any) {
         return {
           id: req.id,
           method: req.method,
           url: req.url?.split("?")[0],
         };
       },
-      res(res) {
+      res(res: any) {
         return {
           statusCode: res.statusCode,
         };
