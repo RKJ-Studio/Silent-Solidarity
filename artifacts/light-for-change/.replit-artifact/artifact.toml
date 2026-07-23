@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Light For Change"
+version = "1.0.0"
+id = "artifacts/light-for-change"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25172
+
+[services.development]
+run = "pnpm --filter @workspace/light-for-change run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/light-for-change", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/light-for-change/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25172"
+BASE_PATH = "/"

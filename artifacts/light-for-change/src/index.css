@@ -1,0 +1,187 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'maplibre-gl/dist/maplibre-gl.css';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --background: 228 52% 4%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 100% / 0.05;
+  --card-foreground: 0 0% 100%;
+  --card-border: 0 0% 100% / 0.1;
+  --popover: 228 52% 4%;
+  --popover-foreground: 0 0% 100%;
+  --popover-border: 0 0% 100% / 0.1;
+  --primary: 38 92% 50%;
+  --primary-foreground: 228 52% 4%;
+  --secondary: 0 0% 100% / 0.1;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 100% / 0.05;
+  --muted-foreground: 0 0% 60%;
+  --accent: 38 92% 50% / 0.2;
+  --accent-foreground: 38 92% 50%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 100% / 0.1;
+  --input: 0 0% 100% / 0.1;
+  --ring: 38 92% 50%;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: 228 52% 4%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 100% / 0.05;
+  --card-foreground: 0 0% 100%;
+  --card-border: 0 0% 100% / 0.1;
+  --popover: 228 52% 4%;
+  --popover-foreground: 0 0% 100%;
+  --popover-border: 0 0% 100% / 0.1;
+  --primary: 38 92% 50%;
+  --primary-foreground: 228 52% 4%;
+  --secondary: 0 0% 100% / 0.1;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 100% / 0.05;
+  --muted-foreground: 0 0% 60%;
+  --accent: 38 92% 50% / 0.2;
+  --accent-foreground: 38 92% 50%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 100% / 0.1;
+  --input: 0 0% 100% / 0.1;
+  --ring: 38 92% 50%;
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply font-sans antialiased bg-background text-foreground; }
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Prevent horizontal overflow on mobile */
+  body { overflow-x: hidden; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* Focus visible ring */
+:focus-visible {
+  outline: 2px solid hsl(38 92% 50%);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+}
+
+@keyframes flicker {
+  0%, 100% { transform: scaleY(1) scaleX(1); opacity: 1; }
+  25% { transform: scaleY(1.05) scaleX(0.95); opacity: 0.9; }
+  50% { transform: scaleY(0.95) scaleX(1.05); opacity: 1; }
+  75% { transform: scaleY(1.08) scaleX(0.92); opacity: 0.85; }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(245,158,11,0.3), 0 0 40px rgba(245,158,11,0.1); }
+  50% { box-shadow: 0 0 30px rgba(245,158,11,0.5), 0 0 60px rgba(245,158,11,0.2); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes countUp {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.candle-marker svg { 
+  animation: flicker 2s ease-in-out infinite; 
+  transform-origin: center bottom; 
+}
+.candle-marker { 
+  cursor: pointer; 
+  filter: drop-shadow(0 0 8px rgba(255,140,0,0.8)); 
+  transition: transform 0.2s ease-out;
+}
+.candle-marker:hover {
+  transform: scale(1.2);
+}
+
+.glow-text { text-shadow: 0 0 20px rgba(245, 158, 11, 0.5); }
+.animate-glow-pulse { animation: glowPulse 3s ease-in-out infinite; }
+.animate-fade-in-up { animation: fadeInUp 0.5s ease-out both; }
+.animate-count-up { animation: countUp 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+
+.map-glow-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 0%, rgba(5,8,16,0.8) 100%);
+  z-index: 10;
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(245, 158, 11, 0.3);
+  color: white;
+}
+
+/* Prevent overscroll bounce on iOS */
+@supports (-webkit-touch-callout: none) {
+  body { overscroll-behavior: none; }
+}

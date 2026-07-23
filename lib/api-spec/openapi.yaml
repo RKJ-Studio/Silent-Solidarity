@@ -3,20 +3,28 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Light For Change - Digital Candle Map API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: candles
+    description: Candle operations
+  - name: stats
+    description: Statistics
+  - name: locations
+    description: Location lookups
+  - name: admin
+    description: Admin operations
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +32,403 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /candles:
+    get:
+      operationId: getCandles
+      tags: [candles]
+      summary: List candles with optional viewport bounds
+      parameters:
+        - name: minLat
+          in: query
+          schema: { type: number }
+        - name: maxLat
+          in: query
+          schema: { type: number }
+        - name: minLng
+          in: query
+          schema: { type: number }
+        - name: maxLng
+          in: query
+          schema: { type: number }
+        - name: country
+          in: query
+          schema: { type: string }
+        - name: state
+          in: query
+          schema: { type: string }
+        - name: city
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 500 }
+        - name: fromDate
+          in: query
+          schema: { type: string, format: date-time }
+        - name: toDate
+          in: query
+          schema: { type: string, format: date-time }
+      responses:
+        "200":
+          description: List of candles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CandleList"
+
+    post:
+      operationId: createCandle
+      tags: [candles]
+      summary: Light a candle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CandleInput"
+      responses:
+        "201":
+          description: Candle created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Candle"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /candles/recent:
+    get:
+      operationId: getRecentCandles
+      tags: [candles]
+      summary: Most recent candles with messages
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Recent candles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Candle"
+
+  /candles/clusters:
+    get:
+      operationId: getCandleClusters
+      tags: [candles]
+      summary: Clustered candle data for map rendering
+      parameters:
+        - name: zoom
+          in: query
+          required: true
+          schema: { type: number }
+        - name: minLat
+          in: query
+          schema: { type: number }
+        - name: maxLat
+          in: query
+          schema: { type: number }
+        - name: minLng
+          in: query
+          schema: { type: number }
+        - name: maxLng
+          in: query
+          schema: { type: number }
+      responses:
+        "200":
+          description: Cluster data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CandleCluster"
+
+  /candles/timeline:
+    get:
+      operationId: getCandleTimeline
+      tags: [candles]
+      summary: Daily candle counts for timeline slider
+      parameters:
+        - name: days
+          in: query
+          schema: { type: integer, default: 30 }
+      responses:
+        "200":
+          description: Timeline data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TimelineEntry"
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [stats]
+      summary: Global statistics
+      responses:
+        "200":
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GlobalStats"
+
+  /stats/countries:
+    get:
+      operationId: getCountryStats
+      tags: [stats]
+      summary: Candle count by country
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Country stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LocationStat"
+
+  /stats/states:
+    get:
+      operationId: getStateStats
+      tags: [stats]
+      summary: Candle count by state
+      parameters:
+        - name: country
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: State stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LocationStat"
+
+  /stats/cities:
+    get:
+      operationId: getCityStats
+      tags: [stats]
+      summary: Candle count by city
+      parameters:
+        - name: state
+          in: query
+          schema: { type: string }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: City stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LocationStat"
+
+  /locations/countries:
+    get:
+      operationId: getCountries
+      tags: [locations]
+      summary: List of unique countries that have candles
+      responses:
+        "200":
+          description: Countries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /locations/states:
+    get:
+      operationId: getStates
+      tags: [locations]
+      summary: List of states for a country
+      parameters:
+        - name: country
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: States
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /locations/cities:
+    get:
+      operationId: getCities
+      tags: [locations]
+      summary: List of cities for a state
+      parameters:
+        - name: state
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Cities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthToken"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/candles:
+    get:
+      operationId: adminGetCandles
+      tags: [admin]
+      summary: Admin list candles with hidden ones
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: includeHidden
+          in: query
+          schema: { type: boolean, default: true }
+      responses:
+        "200":
+          description: Admin candle list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminCandleList"
+
+  /admin/candles/{id}/hide:
+    patch:
+      operationId: adminHideCandle
+      tags: [admin]
+      summary: Hide a candle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HideCandleInput"
+      responses:
+        "200":
+          description: Candle updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Candle"
+
+  /admin/candles/{id}:
+    delete:
+      operationId: adminDeleteCandle
+      tags: [admin]
+      summary: Delete a candle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /admin/ban-ip:
+    post:
+      operationId: adminBanIp
+      tags: [admin]
+      summary: Ban an IP address
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BanIpInput"
+      responses:
+        "200":
+          description: IP banned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /admin/stats:
+    get:
+      operationId: adminGetStats
+      tags: [admin]
+      summary: Admin stats with detailed breakdown
+      responses:
+        "200":
+          description: Admin stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +436,254 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required: [success]
+
+    Candle:
+      type: object
+      properties:
+        id:
+          type: integer
+        displayName:
+          type: ["string", "null"]
+        message:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        state:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        latitudeRounded:
+          type: ["number", "null"]
+        longitudeRounded:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        isHidden:
+          type: boolean
+      required: [id, createdAt, isHidden]
+
+    CandleInput:
+      type: object
+      properties:
+        displayName:
+          type: string
+          maxLength: 50
+        message:
+          type: string
+          maxLength: 150
+        country:
+          type: string
+        state:
+          type: string
+        city:
+          type: string
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+        captchaToken:
+          type: string
+        acceptedTerms:
+          type: boolean
+          description: Must be true to confirm acceptance of the published terms and community rules.
+      required: [acceptedTerms]
+
+    CandleList:
+      type: object
+      properties:
+        candles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Candle"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [candles, total, page, limit]
+
+    CandleCluster:
+      type: object
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+        count:
+          type: integer
+        isCluster:
+          type: boolean
+        candleId:
+          type: ["integer", "null"]
+        displayName:
+          type: ["string", "null"]
+        message:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        state:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        createdAt:
+          type: ["string", "null"]
+      required: [lat, lng, count, isCluster]
+
+    TimelineEntry:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        count:
+          type: integer
+        cumulative:
+          type: integer
+      required: [date, count, cumulative]
+
+    GlobalStats:
+      type: object
+      properties:
+        totalCandles:
+          type: integer
+        totalCountries:
+          type: integer
+        totalStates:
+          type: integer
+        totalCities:
+          type: integer
+        todayCandles:
+          type: integer
+        weekCandles:
+          type: integer
+        monthCandles:
+          type: integer
+      required:
+        [totalCandles, totalCountries, totalStates, totalCities, todayCandles, weekCandles, monthCandles]
+
+    LocationStat:
+      type: object
+      properties:
+        name:
+          type: string
+        count:
+          type: integer
+        percentage:
+          type: number
+      required: [name, count, percentage]
+
+    AdminLoginInput:
+      type: object
+      properties:
+        password:
+          type: string
+      required: [password]
+
+    AuthToken:
+      type: object
+      properties:
+        token:
+          type: string
+      required: [token]
+
+    AdminCandleList:
+      type: object
+      properties:
+        candles:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminCandle"
+        total:
+          type: integer
+        page:
+          type: integer
+      required: [candles, total, page]
+
+    AdminCandle:
+      type: object
+      properties:
+        id:
+          type: integer
+        displayName:
+          type: ["string", "null"]
+        message:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        state:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        latitudeRounded:
+          type: ["number", "null"]
+        longitudeRounded:
+          type: ["number", "null"]
+        ipAddress:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        isHidden:
+          type: boolean
+      required: [id, createdAt, isHidden]
+
+    HideCandleInput:
+      type: object
+      properties:
+        isHidden:
+          type: boolean
+      required: [isHidden]
+
+    BanIpInput:
+      type: object
+      properties:
+        ipAddress:
+          type: string
+        reason:
+          type: string
+      required: [ipAddress]
+
+    AdminStats:
+      type: object
+      properties:
+        totalCandles:
+          type: integer
+        hiddenCandles:
+          type: integer
+        bannedIps:
+          type: integer
+        todayCandles:
+          type: integer
+        weekCandles:
+          type: integer
+        monthCandles:
+          type: integer
+        totalCountries:
+          type: integer
+        totalStates:
+          type: integer
+        totalCities:
+          type: integer
+      required:
+        [totalCandles, hiddenCandles, bannedIps, todayCandles, weekCandles, monthCandles, totalCountries, totalStates, totalCities]

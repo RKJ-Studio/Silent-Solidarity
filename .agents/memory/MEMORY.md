@@ -1,0 +1,2 @@
+- [Orval schema collision fix](orval-collision.md) — rename response schemas that collide with Orval's auto-generated Zod names in api.ts
+- [MapLibre WebGL fallback](maplibre-webgl.md) — MapLibre GL fails in Replit sandbox; always add WebGL pre-check and fallback UI
