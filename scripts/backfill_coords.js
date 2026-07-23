@@ -1,6 +1,9 @@
 const { Pool } = require('pg');
 (async () => {
-  const url = process.env.DATABASE_URL || 'postgresql://postgres.fkqddcbcpbuvibikuhfq:XxXthOyzrSS1Rskz@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres';
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error('DATABASE_URL environment variable is not set');
+  }
   const pool = new Pool({
     connectionString: url,
     ssl: { rejectUnauthorized: false }
